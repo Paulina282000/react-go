@@ -1,0 +1,23 @@
+# air.toml
+
+# Directorio raíz de trabajo del proyecto
+root = "."
+
+# Directorio temporal donde 'air' almacenará archivos temporales
+tmp_dir = "tmp"
+
+[build]
+  # Comando para compilar el proyecto (ajustado para Go)
+  cmd = "go build -o {{.Output}} {{.Input}}"
+
+  # El nombre del archivo binario que se generará después de construir el proyecto
+  bin = "main"
+
+  # Incluir todos los archivos .go en el proyecto para monitoreo
+  include = ["**/*.go"]
+
+  # Excluir directorios que no deben ser monitoreados
+  exclude = ["tmp/*", ".git/*", "client/*"]
+
+  # Ignorar archivos en directorios específicos (por ejemplo, tmp)
+  ignore = ["tmp/*"]

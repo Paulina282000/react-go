@@ -1,0 +1,5 @@
+archivo air.toml
+
+Un archivo air.toml es un archivo de configuración utilizado por la herramienta air en proyectos Go. air es una herramienta de recarga en vivo (live reload) que ayuda a los desarrolladores a realizar cambios en sus aplicaciones Go y ver los resultados inmediatamente sin tener que reiniciar manualmente el servidor.
+
+El archivo air.toml le indica a air cómo monitorear los archivos en tu proyecto, cómo construir el proyecto cuando hay cambios y qué comportamiento seguir cuando detecta modificaciones en los archivos.
