@@ -21,10 +21,8 @@ func main() {
 	app := fiber.New()
 
 	// Definir la ruta raíz '/'
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.Status(200).JSON(fiber.Map{
-			"msg": "Hello world",
-		})
+	app.Get("/api/todos", func(c *fiber.Ctx) error {
+		return c.Status(200).JSON(todos)
 	})
 
 	// Ruta POST para crear un nuevo ToDo
@@ -67,6 +65,21 @@ func main() {
 
 		// Si no se encuentra el ToDo
 		return c.Status(404).JSON(fiber.Map{"error": "todo not found"})
+	})
+
+	//Delete a Todo
+
+	app.Delete("/api/todos/:id", func(c *fiber.Ctx) error {
+		id := c.Params("id")
+
+		for i, todo := range todos {
+			if fmt.Sprint(todo.ID) == id {
+				todos = append(todos[:i], todos[i+1:]...)
+				return c.Status(200).JSON(fiber.Map{"success": "True"})
+			}
+		}
+
+		return c.Status(404).JSON(fiber.Map{"error": "Todo not found"})
 	})
 
 	// Iniciar el servidor en el puerto 4000
