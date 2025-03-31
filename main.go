@@ -6,16 +6,19 @@ import (
 	"log"
 	"os"
 
-	"github.com/gofiber/fiber"
+	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	//"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type ToDo struct {
-	ID        int    `json:"_id" bson:"_id"`
-	Completed bool   `json:"completed"`
-	Body      string `json:"body"`
+	ID        primitive.ObjectID `json:"_id, omitempty" bson:"_id,omitempty"`
+	Completed bool               `json:"completed"`
+	Body      string             `json:"body"`
 }
 
 var collection *mongo.Collection
@@ -36,6 +39,8 @@ func main() {
 		log.Fatal(err)
 	}
 
+	defer client.Disconnect(context.Background())
+
 	err = client.Ping(context.Background(), nil)
 	if err != nil {
 		log.Fatal(err)
@@ -48,9 +53,9 @@ func main() {
 	app := fiber.New()
 
 	app.Get("/api/todos", getTodos)
-	//app.Post("/api/todos", createTodos)
-	//app.Patch("/api/todos/:id", updateTodos)
-	//app.Delete("/api/todos/:id", deleteTodos)
+	app.Post("/api/todos", createTodos)
+	app.Patch("/api/todos/:id", updateTodos)
+	app.Delete("/api/todos/:id", deleteTodos)
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -60,10 +65,86 @@ func main() {
 	log.Fatal(app.Listen("0.0.0.0:" + port))
 }
 
-func getTodos(c *fiber.Ctx) error {}
+func getTodos(c *fiber.Ctx) error {
 
-// func createTodos(c *fiber.Ctx) error {}
+	var todos []ToDo
 
-// func updateTodos(c *fiber.Ctx) error {}
+	cursor, err := collection.Find(context.Background(), bson.M{})
+	if err != nil {
+		return err
+	}
 
-// func deleteTodos(c *fiber.Ctx) error {}
+	defer cursor.Close(context.Background())
+
+	for cursor.Next(context.Background()) {
+
+		var todo ToDo
+		if err := cursor.Decode(&todo); err != nil {
+			return err
+		}
+		todos = append(todos, todo)
+	}
+	return c.JSON(todos)
+
+}
+
+func createTodos(c *fiber.Ctx) error {
+
+	todo := new(ToDo)
+	if err := c.BodyParser(todo); err != nil {
+		return err
+	}
+
+	if todo.Body == "" {
+		return c.Status(400).JSON(fiber.Map{"error": "Body is required"})
+	}
+
+	insertResult, err := collection.InsertOne(context.Background(), todo)
+	if err != nil {
+		return err
+	}
+
+	todo.ID = insertResult.InsertedID.(primitive.ObjectID)
+
+	return c.Status(201).JSON(todo)
+
+}
+
+func updateTodos(c *fiber.Ctx) error {
+
+	id := c.Params("id")
+	ObjectID, err := primitive.ObjectIDFromHex(id)
+
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "Invalid ID"})
+	}
+	filter := bson.M{"_id": ObjectID}
+	update := bson.M{"$set": bson.M{"completed": true}}
+
+	_, err = collection.UpdateOne(context.Background(), filter, update)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(200).JSON(fiber.Map{"succes": true})
+
+}
+
+func deleteTodos(c *fiber.Ctx) error {
+
+	id := c.Params("id")
+	ObjectID, err := primitive.ObjectIDFromHex(id)
+
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "Invalid todo ID"})
+	}
+	filter := bson.M{"_id": ObjectID}
+
+	_, err = collection.DeleteOne(context.Background(), filter)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(200).JSON(fiber.Map{"succes": true})
+
+}
