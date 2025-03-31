@@ -3,8 +3,10 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/joho/godotenv"
 )
 
 type ToDo struct {
@@ -19,6 +21,13 @@ func main() {
 	fmt.Println("Hello, World!")
 
 	app := fiber.New()
+
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	PORT := os.Getenv("PORT")
 
 	// Definir la ruta raíz '/'
 	app.Get("/api/todos", func(c *fiber.Ctx) error {
@@ -75,7 +84,7 @@ func main() {
 		for i, todo := range todos {
 			if fmt.Sprint(todo.ID) == id {
 				todos = append(todos[:i], todos[i+1:]...)
-				return c.Status(200).JSON(fiber.Map{"success": "True"})
+				return c.Status(200).JSON(fiber.Map{"success": true})
 			}
 		}
 
@@ -83,5 +92,5 @@ func main() {
 	})
 
 	// Iniciar el servidor en el puerto 4000
-	log.Fatal(app.Listen(":4000"))
+	log.Fatal(app.Listen(":" + PORT))
 }
