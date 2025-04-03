@@ -1,5 +1,4 @@
-import { Box, Flex, Button, Text, Container } from "@chakra-ui/react";
-import { useColorMode, useColorModeValue } from "@chakra-ui/color-mode";
+import { Box, Flex, Button, useColorModeValue, useColorMode, Text, Container } from "@chakra-ui/react";
 import { IoMoon } from "react-icons/io5";
 import { LuSun } from "react-icons/lu";
 
