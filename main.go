@@ -26,9 +26,11 @@ var collection *mongo.Collection
 func main() {
 	fmt.Println("Hello, World!")
 
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatal("Error loading .env file")
+	if os.Getenv("ENV") != "production" {
+		err := godotenv.Load(".env")
+		if err != nil {
+			log.Fatal("Error loading .env file")
+		}
 	}
 
 	MONGODB_URI := os.Getenv("MONGODB_URI")
