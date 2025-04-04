@@ -1,34 +1,42 @@
-import { Flex, Spinner, Stack, Text } from "@chakra-ui/react";
-import { useState } from "react";
+import { Flex, Spinner, Stack, Text} from "@chakra-ui/react";
+
 import TodoItem from "./TodoItem";
 
+import { useQuery } from "@tanstack/react-query";
+
+export type Todo = { 
+	_id: string;
+	body: string;
+	completed: boolean;
+}
+
 const TodoList = () => {
-	const [isLoading, setIsLoading] = useState(true);
-	const todos = [
-		{
-			_id: 1,
-			body: "Buy groceries",
-			completed: true,
-		},
-		{
-			_id: 2,
-			body: "Walk the dog",
-			completed: false,
-		},
-		{
-			_id: 3,
-			body: "Do laundry",
-			completed: false,
-		},
-		{
-			_id: 4,
-			body: "Cook dinner",
-			completed: true,
-		},
-	];
+	
+	const { data: todos, isLoading } = useQuery<Todo[]>({
+
+		queryKey: ["todos"],
+		queryFn: async () => {
+			try {
+				const res = await fetch("http://localhost:5000/api/todos");
+				const data = await res.json();
+
+				if (!res.ok) {
+					throw new Error(data.error || "Something went wrong");
+				}
+				return data || []
+			} catch (error) {
+				console.log(error);
+				
+			}
+		}
+	})
+
 	return (
 		<>
-			<Text fontSize={"4xl"} textTransform={"uppercase"} fontWeight={"bold"} textAlign={"center"} my={2}>
+			<Text fontSize={"4xl"} textTransform={"uppercase"} fontWeight={"bold"} textAlign={"center"} my={2}
+			bgGradient = 'linear(to-l,#0b85f8,#00ffff)'
+			bgClip = 'text'
+			>
 				Today's Tasks
 			</Text>
 			{isLoading && (
