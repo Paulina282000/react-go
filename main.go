@@ -59,6 +59,11 @@ func main() {
 		AllowHeaders: "Origin, Content-Type, Accept",
 	}))
 
+	// Esta es la ruta para la raíz
+	app.Get("/", func(c *fiber.Ctx) error {
+		return c.SendString("¡Hola desde tu backend en Railway!")
+	})
+
 	app.Get("/api/todos", getTodos)
 	app.Post("/api/todos", createTodos)
 	app.Patch("/api/todos/:id", updateTodos)
@@ -66,7 +71,7 @@ func main() {
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "5000"
+		port = "8080" // Valor por defecto que coincide con la configuración de Railway
 	}
 
 	log.Fatal(app.Listen("0.0.0.0:" + port))
